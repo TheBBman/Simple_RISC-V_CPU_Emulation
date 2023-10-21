@@ -23,6 +23,7 @@ private:
 	bool mem_to_reg;
 	bool reg_write;
 	bool ALU_src;
+	bool flag_LT;
 	int ALU_control;
 	int reg[32];	// Registers
 
@@ -33,6 +34,9 @@ public:
 	bool Decode(instruction* instr);
 	int generate_immediate(instruction* instr);
 	tuple<int, int, int> get_registers(instruction* instr);
-	int Execute(bitset<32> in1, bitset<32> in2);
+	int Execute(int rs1, int rs2, int imm);
+	int Memory(int ALU_result, int rs2);
+	void Writeback(int read_data, int ALU_result, int rd);
+	tuple<int, int> get_results();
 };
 

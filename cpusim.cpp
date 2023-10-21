@@ -41,8 +41,7 @@ int main(int argc, char* argv[])
 	bitset<32> curr;
 	instruction instr = instruction(curr);
 	bool done = false;
-	int immediate;
-	int rs1, rs2, rd;
+	int immediate, rs1, rs2, rd, ALU_result, read_data;
 
 	while (!done) // processor's main loop. Each iteration is equal to one clock cycle.  
 	{
@@ -58,10 +57,14 @@ int main(int argc, char* argv[])
 		immediate = myCPU.generate_immediate(&instr);
 		auto [rs1, rs2, rd] = myCPU.get_registers(&instr);
 
-		cout << immediate << " " << rs1 << " " << rs2 << " " << rd << endl;
+		// Execute 
+		ALU_result = myCPU.Execute(rs1, rs2, immediate);
+
+		read_data = myCPU.Memory(ALU_result, rs2);
+
+		myCPU.Writeback(read_data, ALU_result, rd);
 	}
-	int a0 = 0;
-	int a1 = 0;  
+	auto [a0, a1] = myCPU.get_results();
 	// print the results (you should replace a0 and a1 with your own variables that point to a0 and a1)
 	cout << "(" << a0 << "," << a1 << ")" << endl;
 	return 0;

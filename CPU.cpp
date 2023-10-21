@@ -10,17 +10,10 @@ CPU::CPU()
 {
 	PC = 0; //set PC to 0
 	ALU_control = 0;
-	for (int i = 0; i < 4096; i++) //copy instrMEM
+	for (int i = 0; i < 4096; i++) 
 	{
 		dmemory[i] = (0);
 	}
-	branch = false;
-	mem_read = false;
-	mem_write = false;
-	mem_to_reg = false;
-	reg_write = false;
-	ALU_src = false;
-	ALU_control = 0;
 }
 
 unsigned long CPU::readPC()
@@ -28,13 +21,25 @@ unsigned long CPU::readPC()
 	return PC;
 }
 
+// Fetch next instruction from memory
 bitset<32> CPU::Fetch(bitset<8> *instmem) {
 	bitset<32> instr = ((((instmem[PC + 3].to_ulong()) << 24)) + ((instmem[PC + 2].to_ulong()) << 16) + ((instmem[PC + 1].to_ulong()) << 8) + (instmem[PC + 0].to_ulong()));  //get 32 bit instruction
-	PC += 4;	//increment PC
+	PC += 4;
+
+	// Reset control signals for next cycle
+	branch = false;
+	mem_read = false;
+	mem_write = false;
+	mem_to_reg = false;
+	reg_write = false;
+	ALU_src = false;
+	flag_LT = false;
+	ALU_control = 0;
+	
 	return instr;
 }
 
-// Decode instruction and set correct operation flags for execution
+// Decode instruction and set correct control signals for later stages
 bool CPU::Decode(instruction* curr)
 {
 	if (!curr->instr[0]) {
@@ -49,6 +54,7 @@ bool CPU::Decode(instruction* curr)
 	// Branch
 	else if (curr->instr[6]) {
 		branch = true;
+		ALU_control = 3;
 		cout << "Branch" << endl;
 	}
 	// Load
@@ -170,6 +176,7 @@ int CPU::generate_immediate(instruction* curr)
     return result;
 }
 
+// Get register numbers (int) for rd, rs1, rs2
 tuple<int, int, int> CPU::get_registers(instruction *curr)
 {
 	bitset<5> rs1, rs2, rd;
@@ -182,7 +189,62 @@ tuple<int, int, int> CPU::get_registers(instruction *curr)
     return make_tuple((int)rs1.to_ulong(), (int)rs2.to_ulong(), (int)rd.to_ulong());
 }
 
-int CPU::Execute(bitset<32> in1, bitset<32> in2)
+// Get ALU output
+int CPU::Execute(int rs1, int rs2, int imm)
 {
-    return 0;
+    int in1 = rs1;
+	int in2 = ALU_src ? imm : rs2;
+
+	if (rs1 < rs2)
+		flag_LT = true;
+
+	int result;
+	switch (ALU_control) {
+		// Right shift
+		case 1:
+			result = rs1 >> rs2;
+			break;
+		// Bitwise XOR
+		case 2:
+			result = rs1 ^ rs2;
+			break;
+		// Subtract
+		case 3:
+			result = rs1 - rs2;
+			break;
+		// Bitwise And
+		case 4:
+			result = rs1 & rs2;
+			break;
+		default:
+			result = rs1 + rs2;
+	}
+	return result;
+}
+
+int CPU::Memory(int ALU_result, int rs2)
+{
+    if (mem_read) {
+		cout << "Fetch " << dmemory[ALU_result] << " from memory " << ALU_result << endl;
+		return dmemory[ALU_result];
+	}
+	if (mem_write) {
+		cout << "Write " << ALU_result << " into memory " << rs2 << endl;
+		dmemory[rs2] = ALU_result; 
+	}
+	return 0;
+}
+
+void CPU::Writeback(int read_data, int ALU_result, int rd)
+{
+	if (!reg_write)
+		return;
+	int data = mem_to_reg ? read_data : ALU_result;
+	reg[rd] = data;
+	cout << "Write " << data << " into register " << rd << endl;
+}
+
+tuple<int, int> CPU::get_results()
+{
+    return make_tuple(reg[10], reg[11]);
 }

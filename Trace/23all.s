@@ -1,6 +1,6 @@
 addi x1, x0, 1
 addi x2, x0, 8
-sub x3, x2,x2
+sub x3, x2, x2
 blt x2, x1, 8
 add x2, x1, x0
 blt x3, x1, 8
