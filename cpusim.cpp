@@ -60,8 +60,10 @@ int main(int argc, char* argv[])
 		// Execute 
 		ALU_result = myCPU.Execute(rs1, rs2, immediate);
 
+		// Memory access
 		read_data = myCPU.Memory(ALU_result, rs2);
 
+		// Update registers
 		myCPU.Writeback(read_data, ALU_result, rd);
 	}
 	auto [a0, a1] = myCPU.get_results();

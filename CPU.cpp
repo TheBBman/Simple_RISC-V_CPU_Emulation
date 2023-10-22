@@ -11,9 +11,9 @@ CPU::CPU()
 	PC = 0; //set PC to 0
 	ALU_control = 0;
 	for (int i = 0; i < 4096; i++) 
-	{
-		dmemory[i] = (0);
-	}
+		dmemory[i] = 0;
+	for (int i = 0; i < 32; i++) 
+		reg[i] = 0;
 }
 
 unsigned long CPU::readPC()
@@ -68,7 +68,6 @@ bool CPU::Decode(instruction* curr)
 	// Store
 	else if (!curr->instr[4] && curr->instr[5]) {
 		mem_write = true;
-		reg_write = true;
 		ALU_src = true;
 		cout << "Store" << endl;
 	}
@@ -192,32 +191,32 @@ tuple<int, int, int> CPU::get_registers(instruction *curr)
 // Get ALU output
 int CPU::Execute(int rs1, int rs2, int imm)
 {
-    int in1 = rs1;
-	int in2 = ALU_src ? imm : rs2;
+    int in1 = reg[rs1];
+	int in2 = ALU_src ? imm : reg[rs2];
 
-	if (rs1 < rs2)
+	if (in1 < in2)
 		flag_LT = true;
 
 	int result;
 	switch (ALU_control) {
 		// Right shift
 		case 1:
-			result = rs1 >> rs2;
+			result = in1 >> in2;
 			break;
 		// Bitwise XOR
 		case 2:
-			result = rs1 ^ rs2;
+			result = in1 ^ in2;
 			break;
 		// Subtract
 		case 3:
-			result = rs1 - rs2;
+			result = in1 - in2;
 			break;
 		// Bitwise And
 		case 4:
-			result = rs1 & rs2;
+			result = in1 & in2;
 			break;
 		default:
-			result = rs1 + rs2;
+			result = in1 + in2;
 	}
 	return result;
 }
@@ -229,8 +228,8 @@ int CPU::Memory(int ALU_result, int rs2)
 		return dmemory[ALU_result];
 	}
 	if (mem_write) {
-		cout << "Write " << ALU_result << " into memory " << rs2 << endl;
-		dmemory[rs2] = ALU_result; 
+		cout << "Write " << reg[rs2] << " into memory " << ALU_result << endl;
+		dmemory[ALU_result] = reg[rs2]; 
 	}
 	return 0;
 }
