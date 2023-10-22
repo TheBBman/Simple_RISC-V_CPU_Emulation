@@ -48,13 +48,13 @@ bool CPU::Decode(instruction* curr)
 	if (curr->instr[2]) {
 		branch = true;
 		reg_write = true;
-		cout << "JALR" << endl;
+		//cout << "JALR" << endl;
 	}
 	// Branch
 	else if (curr->instr[6]) {
 		branch = true;
 		ALU_control = 3;
-		cout << "Branch" << endl;
+		//cout << "Branch" << endl;
 	}
 	// Load
 	else if (!curr->instr[4] && !curr->instr[5]) {
@@ -62,13 +62,13 @@ bool CPU::Decode(instruction* curr)
 		mem_to_reg = true;
 		reg_write = true;
 		ALU_src = true;
-		cout << "Load" << endl;
+		//cout << "Load" << endl;
 	} 
 	// Store
 	else if (!curr->instr[4] && curr->instr[5]) {
 		mem_write = true;
 		ALU_src = true;
-		cout << "Store" << endl;
+		//cout << "Store" << endl;
 	}
 	// Arithmetic
 	else if (curr->instr[5]) {
@@ -79,21 +79,21 @@ bool CPU::Decode(instruction* curr)
 		// SRA
 		if (curr->instr[12]) {
 			ALU_control = 1;
-			cout << "SRA" << endl;
+			//cout << "SRA" << endl;
 		}
 		// XOR
 		else if (curr->instr[14]) {
 			ALU_control = 2;
-			cout << "XOR" << endl;
+			//cout << "XOR" << endl;
 		}
 		// Sub
 		else if (curr->instr[30]) {
 			ALU_control = 3;
-			cout << "Sub" << endl;
+			//cout << "Sub" << endl;
 		}
 		// Add
 		else {
-			cout << "Add" << endl;
+			//cout << "Add" << endl;
 		}
 	}
 	// Immediate related
@@ -106,11 +106,11 @@ bool CPU::Decode(instruction* curr)
 		// AndI
 		if (curr->instr[12]) {
 			ALU_control = 4;
-			cout << "AndI" << endl;
+			//cout << "AndI" << endl;
 		}
 		// AddI
 		else {
-			cout << "AddI" << endl;
+			//cout << "AddI" << endl;
 		}
 	}
 	return false;
@@ -223,11 +223,11 @@ int CPU::Execute(int rs1, int rs2, int imm)
 int CPU::Memory(int ALU_result, int rs2)
 {
     if (mem_read) {
-		cout << "Fetch " << dmemory[ALU_result] << " from memory " << ALU_result << endl;
+		//cout << "Fetch " << dmemory[ALU_result] << " from memory " << ALU_result << endl;
 		return dmemory[ALU_result];
 	}
 	if (mem_write) {
-		cout << "Write " << reg[rs2] << " into memory " << ALU_result << endl;
+		//cout << "Write " << reg[rs2] << " into memory " << ALU_result << endl;
 		dmemory[ALU_result] = reg[rs2]; 
 	}
 	return 0;
@@ -243,7 +243,7 @@ void CPU::Writeback(int read_data, int ALU_result, int rd)
 	}
 	int data = mem_to_reg ? read_data : ALU_result;
 	reg[rd] = data;
-	cout << "Write " << data << " into register " << rd << endl;
+	//cout << "Write " << data << " into register " << rd << endl;
 }
 
 tuple<int, int> CPU::get_results()
