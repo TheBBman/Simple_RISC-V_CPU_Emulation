@@ -24,7 +24,6 @@ unsigned long CPU::readPC()
 // Fetch next instruction from memory
 bitset<32> CPU::Fetch(bitset<8> *instmem) {
 	bitset<32> instr = ((((instmem[PC + 3].to_ulong()) << 24)) + ((instmem[PC + 2].to_ulong()) << 16) + ((instmem[PC + 1].to_ulong()) << 8) + (instmem[PC + 0].to_ulong()));  //get 32 bit instruction
-	PC += 4;
 
 	// Reset control signals for next cycle
 	branch = false;
@@ -194,10 +193,8 @@ int CPU::Execute(int rs1, int rs2, int imm)
     int in1 = reg[rs1];
 	int in2 = ALU_src ? imm : reg[rs2];
 
-	if (in1 < in2)
-		flag_LT = true;
-
 	int result;
+
 	switch (ALU_control) {
 		// Right shift
 		case 1:
@@ -210,6 +207,8 @@ int CPU::Execute(int rs1, int rs2, int imm)
 		// Subtract
 		case 3:
 			result = in1 - in2;
+			if (result < 0) 
+				flag_LT = true;
 			break;
 		// Bitwise And
 		case 4:
@@ -238,6 +237,10 @@ void CPU::Writeback(int read_data, int ALU_result, int rd)
 {
 	if (!reg_write)
 		return;
+	if (branch) {
+		reg[rd] = PC + 4;
+		return;
+	}
 	int data = mem_to_reg ? read_data : ALU_result;
 	reg[rd] = data;
 	cout << "Write " << data << " into register " << rd << endl;
@@ -246,4 +249,20 @@ void CPU::Writeback(int read_data, int ALU_result, int rd)
 tuple<int, int> CPU::get_results()
 {
     return make_tuple(reg[10], reg[11]);
+}
+
+void CPU::update_PC(int rs1, int imm)
+{
+	// JALR case
+	if (branch && reg_write) {
+		PC = reg[rs1] + imm;
+	} 
+	// BLT case
+	else if (branch && flag_LT) {
+		PC += imm;
+	} 
+	// No branch case
+	else {
+		PC += 4;
+	}
 }

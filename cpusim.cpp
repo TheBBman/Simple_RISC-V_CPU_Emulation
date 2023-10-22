@@ -65,6 +65,9 @@ int main(int argc, char* argv[])
 
 		// Update registers
 		myCPU.Writeback(read_data, ALU_result, rd);
+
+		// Update PC
+		myCPU.update_PC(rs1, immediate);
 	}
 	auto [a0, a1] = myCPU.get_results();
 	// print the results (you should replace a0 and a1 with your own variables that point to a0 and a1)

@@ -38,5 +38,6 @@ public:
 	int Memory(int ALU_result, int rs2);
 	void Writeback(int read_data, int ALU_result, int rd);
 	tuple<int, int> get_results();
+	void update_PC(int rs1, int imm);
 };
 
