@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
 		myCPU.update_PC(rs1, immediate);
 	}
 	auto [a0, a1] = myCPU.get_results();
-	// print the results (you should replace a0 and a1 with your own variables that point to a0 and a1)
+	// Print final results
 	cout << "(" << a0 << "," << a1 << ")" << endl;
 	return 0;
 }
